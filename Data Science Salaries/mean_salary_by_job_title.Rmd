@@ -59,7 +59,7 @@ salary_label <- function(salary) {
 mean_salary_plot <- mean_salary_plot_data %>%
   ggplot(aes(x = reorder(job_title, mean_salary), y = mean_salary)) +
   geom_col(width = 0.7, fill='turquoise4', alpha=0.9) + 
-  geom_text(aes(label = scales::dollar(mean_salary)), vjust = -1, size = 2.1, color = "white") + 
+  geom_text(aes(label = scales::dollar(mean_salary)), vjust = -1, size = 2.1, color = "gold2") + 
   labs(title = "Mean Total Salary by Job Title in the USA",
        subtitle = "Including Both Full-Time and Part-Time Employment Types",
        x = "Job Title",

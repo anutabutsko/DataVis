@@ -47,9 +47,9 @@ top_10_countries_by_mean_salary_data <- data %>%
 top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
   arrange(highest_salary) %>%
   ggplot(aes(y=company_location)) +
-  geom_point(aes(x=lowest_salary), color='gold3', size=3) +
-  geom_point(aes(x=highest_salary), color='gold3', size=3) +
-  geom_segment(aes(x=lowest_salary+8000, xend=highest_salary-8000, y=company_location, yend=company_location), color='gold4') +
+  geom_point(aes(x=lowest_salary,), color='gold4', fill='gold3', size=3, shape=21) +
+  geom_point(aes(x=highest_salary), color='gold4', fill='gold3', size=3, shape=21) +
+  geom_segment(aes(x=lowest_salary+7000, xend=highest_salary-7000, y=company_location, yend=company_location), color='gold4') +
   geom_point(aes(x = mean_salary), shape = 23, size = 4, fill = "turquoise4", color='turquoise3') +
   scale_x_continuous(labels=salary_label, breaks = seq(0, 800000, 100000), limits=c(0, 800000)) +
   theme_minimal() +
