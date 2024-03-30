@@ -1,0 +1,85 @@
+```{r}
+# Load necessary libraries for data manipulation and visualization
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+
+```{r}
+# Read the dataset containing salary information
+data <- read.csv("data/data_science_salaries.csv")
+```
+
+```{r}
+# Remove unnecessary columns: salary and salary_currency
+mean_salary_plot_data <- data %>%
+  select(-salary, -salary_currency)
+```
+
+```{r}
+# Filter data for specific job titles within the United States and calculate the mean salary
+mean_salary_plot_data <- mean_salary_plot_data %>%
+  filter(job_title %in% c('Data Scientist',
+                          'Director of Data Science',
+                          'Data Science Manager',
+                          'Head of Data Science',
+                          'Lead Data Scientist',
+                          'Data Science Practitioner',
+                          'Managing Director Data Science',
+                          'Data Science Consultant',
+                          'AI Scientist',
+                          'Data Architect',
+                          'Data Engineer',
+                          'Data Analyst'),
+         company_location == 'United States',
+         employee_residence == 'United States') %>%
+  group_by(job_title) %>%
+  summarise(mean_salary = mean(salary_in_usd, na.rm = TRUE))
+```
+
+```{r}
+# Adjust job titles for better readability in the plot
+mean_salary_plot_data$job_title <- gsub('Director of Data Science', 'Director of\nData Science', mean_salary_plot_data$job_title)
+mean_salary_plot_data$job_title <- gsub("Data Science Manager", "Data Science\nManager", mean_salary_plot_data$job_title)
+mean_salary_plot_data$job_title <- gsub('Data Science Practitioner', 'Data Science\nPractitioner', mean_salary_plot_data$job_title)
+mean_salary_plot_data$job_title <- gsub('Managing Director Data Science', 'Managing Director\nof Data Science', mean_salary_plot_data$job_title)
+mean_salary_plot_data$job_title <- gsub('Data Science Consultant', 'Data Science\nConsultant', mean_salary_plot_data$job_title)
+mean_salary_plot_data$job_title <- gsub('Head of Data Science', 'Head of\nData Science', mean_salary_plot_data$job_title)
+```
+
+```{r}
+# Define a custom label function for formatting salary values as "$100k"
+salary_label <- function(salary) {
+  paste0("$", round(salary / 1000, 0), "k")
+}
+```
+
+```{r}
+# Create a bar plot visualizing the mean total salary by job title in the USA, for both full-time and part-time employment types
+mean_salary_plot <- mean_salary_plot_data %>%
+  ggplot(aes(x = reorder(job_title, mean_salary), y = mean_salary)) +
+  geom_col(width = 0.7, fill='turquoise4', alpha=0.9) + 
+  geom_text(aes(label = scales::dollar(mean_salary)), vjust = -1, size = 2.1, color = "white") + 
+  labs(title = "Mean Total Salary by Job Title in the USA",
+       subtitle = "Including Both Full-Time and Part-Time Employment Types",
+       x = "Job Title",
+       y = "Mean Salary in USD\n",
+       caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
+  theme_minimal() +
+  scale_y_continuous(labels=salary_label, breaks = seq(0, 300000, 50000), limits=c(0, 300000)) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1, vjust = 1, size = 8), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(size=0.05),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill='gray15', color="NA"),
+        axis.text = element_text(color='white', size=8),
+        plot.title = element_text(color='white', size=14),
+        plot.subtitle = element_text(color='white', size=8, vjust=2),
+        axis.title = element_text(color='turquoise4', size = 8),
+        plot.caption = element_text(color='gray70', size=6))
+```
+
+```{r}
+# Display the plot
+mean_salary_plot
+```

@@ -1,0 +1,77 @@
+```{r}
+# Load necessary libraries for data manipulation and visualization
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(ggtext)
+```
+
+```{r}
+# Read the dataset containing salary information
+data <- read.csv("data/data_science_salaries.csv")
+```
+
+```{r}
+# Remove unnecessary columns: salary and salary_currency
+data <- data %>%
+  select(-salary, -salary_currency)
+```
+
+```{r}
+# Define a custom label function for formatting salary values as "$100k"
+salary_label <- function(salary) {
+  paste0("$", round(salary / 1000, 0), "k")
+}
+```
+
+```{r}
+# Preprocess data to focus on top 10 company locations based on mean salary
+# Ensure there are at least 20 observations per group for reliability
+top_10_countries_by_mean_salary_data <- data %>%
+  group_by(company_location) %>%
+  filter(n() >= 20) %>%
+  summarise(
+    mean_salary = mean(salary_in_usd, na.rm = TRUE),
+    lowest_salary = min(salary_in_usd, na.rm = TRUE),
+    highest_salary = max(salary_in_usd, na.rm = TRUE),
+    n = n()
+  ) %>%
+  arrange(desc(mean_salary)) %>%
+  slice_head(n = 10) %>%
+  mutate(company_location = paste0(company_location, "<br><span style='font-size:5pt;'>from ", n, " salaries</span>")) %>%
+  mutate(company_location = factor(company_location, levels = company_location[order(mean_salary)]))
+```
+
+```{r}
+# Create a plot to visualize salary data for top 10 locations
+top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
+  arrange(highest_salary) %>%
+  ggplot(aes(y=company_location)) +
+  geom_point(aes(x=lowest_salary), color='gold3', size=3) +
+  geom_point(aes(x=highest_salary), color='gold3', size=3) +
+  geom_segment(aes(x=lowest_salary+8000, xend=highest_salary-8000, y=company_location, yend=company_location), color='gold4') +
+  geom_point(aes(x = mean_salary), shape = 23, size = 4, fill = "turquoise4", color='turquoise3') +
+  scale_x_continuous(labels=salary_label, breaks = seq(0, 800000, 100000), limits=c(0, 800000)) +
+  theme_minimal() +
+  labs(title='Top 10 Countries in Data Science Salaries',
+       x="\nSalary Range",
+       y=NULL,
+       caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
+  theme(axis.text.x = element_text(size = 8), 
+        axis.text.y = element_markdown(margin = margin(r = -15)),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(size=0.05),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill = 'gray15'),
+        axis.text = element_text(color = 'white'),
+        plot.title = element_text(color = 'white', size = 14),
+        plot.subtitle = element_text(color = 'white', size = 8, vjust = 2),
+        axis.title = element_text(color = 'white', size = 10),
+        axis.title.x = element_text(vjust=1.5, color='turquoise4', size = 8),
+        plot.caption = element_text(color='gray70', size=6))
+```
+
+```{r}
+# Display the plot
+top_10_countries_by_mean_salary_plot
+```
