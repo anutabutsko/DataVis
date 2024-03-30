@@ -27,10 +27,9 @@ salary_label <- function(salary) {
 # Prepare the data for plotting:
 # Filter for observations in the United States and summarize mean salaries by work model and year
 salary_trends_plot_data <- data %>%
-  filter(company_location == 'United States',
-         employee_residence == 'United States') %>%
+  filter(company_location == 'United States') %>%
   group_by(work_models, work_year) %>%
-  summarise(mean_salary = mean(salary_in_usd, na.rm = TRUE))
+  summarise(mean_salary = mean(salary_in_usd), n=n())
 ```
 ```{r}
 # Create the plot
@@ -39,12 +38,12 @@ salary_trends_plot <- salary_trends_plot_data %>%
   geom_line(show.legend = FALSE) +
   geom_point(shape = 23, size = 4, aes(color = work_models, fill = work_models)) +
   theme_minimal() +
-  scale_y_continuous(labels=salary_label, breaks = seq(100000, 300000, 25000), limits=c(120000, 260000)) +
+  scale_y_continuous(labels=salary_label, breaks = seq(100000, 300000, 25000), limits=c(100000, 225000)) +
   scale_x_continuous(position='top') +
-  scale_color_manual(values = c("Remote" = "plum3", "On-site" = "turquoise3", "Hybrid" = "gold3")) +
-  scale_fill_manual(values = c("Remote" = "plum4", "On-site" = "turquoise4", "Hybrid" = "gold4")) +
-  labs(title='Data Science Salary Trends by Work Model',
-       subtitle = "For Years 2020 through 2024",
+  scale_color_manual(values = c("On-site" = "turquoise3", "Hybrid" = "gold3", "Remote" = "plum3")) +
+  scale_fill_manual(values = c("On-site" = "turquoise4", "Hybrid" = "gold4", "Remote" = "plum4")) +
+  labs(title='Data Science Salary Trends in the USA',
+       subtitle = "Categorized by Work Model\nFor Years 2020 through 2024",
        x=NULL,
        y = "Mean Salary in USD\n",
        caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
