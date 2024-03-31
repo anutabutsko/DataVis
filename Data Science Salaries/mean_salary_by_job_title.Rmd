@@ -12,13 +12,13 @@ data <- read.csv("data/data_science_salaries.csv")
 
 ```{r}
 # Remove unnecessary columns: salary and salary_currency
-mean_salary_plot_data <- data %>%
+data <- data %>%
   select(-salary, -salary_currency)
 ```
 
 ```{r}
 # Filter data for specific job titles within the United States and calculate the mean salary
-mean_salary_plot_data <- mean_salary_plot_data %>%
+mean_salary_plot_data <- data %>%
   filter(job_title %in% c('Data Scientist',
                           'Director of Data Science',
                           'Data Science Manager',
@@ -35,6 +35,10 @@ mean_salary_plot_data <- mean_salary_plot_data %>%
          employee_residence == 'United States') %>%
   group_by(job_title) %>%
   summarise(mean_salary = mean(salary_in_usd, na.rm = TRUE))
+
+# Create a separate data frame to highlight Data Scientist
+highlight_data_scientist <- mean_salary_plot_data %>%
+  filter(job_title == 'Data Scientist')
 ```
 
 ```{r}
@@ -58,16 +62,37 @@ salary_label <- function(salary) {
 # Create a bar plot visualizing the mean total salary by job title in the USA, for both full-time and part-time employment types
 mean_salary_plot <- mean_salary_plot_data %>%
   ggplot(aes(x = reorder(job_title, mean_salary), y = mean_salary)) +
-  geom_col(width = 0.7, fill='turquoise4', alpha=0.9) + 
-  geom_text(aes(label = scales::dollar(mean_salary)), vjust = -1, size = 2.1, color = "gold2") + 
+  geom_bar(width = 0.7, 
+           fill='turquoise4', 
+           color='turquoise3', 
+           alpha=0.9, 
+           stat = "identity", 
+           size = 0.3) + 
+  geom_bar(data=highlight_data_scientist, 
+           aes(x = job_title, y = mean_salary), 
+           width = 0.7, 
+           fill='plum4', 
+           color='plum3', 
+           alpha=0.9, 
+           stat = "identity", 
+           size = 0.4) +
+  geom_text(aes(label = scales::dollar(mean_salary)), 
+            vjust = -1, 
+            size = 2.1, 
+            color = "gold2") + 
   labs(title = "Mean Total Salary by Job Title in the USA",
        subtitle = "Including Both Full-Time and Part-Time Employment Types",
        x = "Job Title",
        y = "Mean Salary in USD\n",
        caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
   theme_minimal() +
-  scale_y_continuous(labels=salary_label, breaks = seq(0, 300000, 50000), limits=c(0, 300000)) +
-  theme(axis.text.x = element_text(angle = 40, hjust = 0.7, vjust = 0.9, size = 8), 
+  scale_y_continuous(labels=salary_label, 
+                     breaks = seq(0, 300000, 50000), 
+                     limits=c(0, 300000)) +
+  theme(axis.text.x = element_text(angle = 40, 
+                                   hjust = 0.7, 
+                                   vjust = 0.9, 
+                                   size = 8), 
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_line(size=0.05),
         panel.grid.minor = element_blank(),

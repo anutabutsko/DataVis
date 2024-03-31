@@ -40,6 +40,11 @@ top_10_countries_by_mean_salary_data <- data %>%
   slice_head(n = 10) %>%
   mutate(company_location = paste0(company_location, "<br><span style='font-size:5pt;'>from ", n, " salaries</span>")) %>%
   mutate(company_location = factor(company_location, levels = company_location[order(mean_salary)]))
+top_10_countries_by_mean_salary_data
+
+# Create a separate data frame to highlight United States
+highlight_united_states <- top_10_countries_by_mean_salary_data %>%
+  filter(company_location == "United States<br><span style='font-size:5pt;'>from 5354 salaries</span>")
 ```
 
 ```{r}
@@ -47,11 +52,36 @@ top_10_countries_by_mean_salary_data <- data %>%
 top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
   arrange(highest_salary) %>%
   ggplot(aes(y=company_location)) +
-  geom_point(aes(x=lowest_salary,), color='gold3', fill='gold4', size=3, shape=21) +
-  geom_point(aes(x=highest_salary), color='gold3', fill='gold4', size=3, shape=21) +
-  geom_segment(aes(x=lowest_salary+7000, xend=highest_salary-7000, y=company_location, yend=company_location), color='gold3') +
-  geom_point(aes(x = mean_salary), shape = 23, size = 4, fill = "turquoise4", color='turquoise3') +
-  scale_x_continuous(labels=salary_label, breaks = seq(0, 800000, 100000), limits=c(0, 800000)) +
+  geom_point(aes(x=lowest_salary,), 
+             color='gold3', 
+             fill='gold4', 
+             size=3, 
+             shape=21) +
+  geom_point(aes(x=highest_salary), 
+             color='gold3', 
+             fill='gold4', 
+             size=3, 
+             shape=21) +
+  geom_segment(aes(x=lowest_salary+7000, 
+                   xend=highest_salary-7000, 
+                   y=company_location, 
+                   yend=company_location), 
+               color='gold3',
+               size=0.2) +
+  geom_point(aes(x = mean_salary), 
+             shape = 23, 
+             size = 3.5, 
+             fill = "turquoise4", 
+             color='turquoise3') +
+  geom_point(data=highlight_united_states,
+             aes(x = mean_salary), 
+             shape = 23, 
+             size = 4.5, 
+             fill = "plum4", 
+             color='plum3') +
+  scale_x_continuous(labels=salary_label, 
+                     breaks = seq(0, 800000, 100000), 
+                     limits=c(0, 800000)) +
   theme_minimal() +
   labs(title='Top 10 Countries in Data Science Salaries',
        x="\nSalary Range",
