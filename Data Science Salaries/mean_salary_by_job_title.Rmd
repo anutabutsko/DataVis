@@ -97,10 +97,10 @@ mean_salary_plot <- mean_salary_plot_data %>%
         panel.grid.major.y = element_line(size=0.05),
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill='gray15', color="NA"),
-        axis.text = element_text(color='white', size=8),
+        axis.text = element_text(color='white', size=8, face = "italic"),
         plot.title = element_text(color='white', size=14),
-        plot.subtitle = element_text(color='white', size=8, vjust=2),
-        axis.title = element_text(color='turquoise4', size = 8),
+        plot.subtitle = element_text(color='white', size=8, vjust=2, face = "italic"),
+        axis.title = element_text(color='turquoise4', size = 8, face = "italic"),
         axis.title.y = element_text(vjust=-1.2),
         plot.caption = element_text(color='gray70', size=6))
 ```

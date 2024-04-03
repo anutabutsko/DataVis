@@ -38,13 +38,13 @@ top_10_countries_by_mean_salary_data <- data %>%
   ) %>%
   arrange(desc(mean_salary)) %>%
   slice_head(n = 10) %>%
-  mutate(company_location = paste0(company_location, "<br><span style='font-size:5pt;'>from ", n, " salaries</span>")) %>%
+  mutate(company_location = paste0(company_location, "<br><span style='font-size:5pt; font-style: italic;'>from ", n, " salaries</span>")) %>%
   mutate(company_location = factor(company_location, levels = company_location[order(mean_salary)]))
 top_10_countries_by_mean_salary_data
 
 # Create a separate data frame to highlight United States
 highlight_united_states <- top_10_countries_by_mean_salary_data %>%
-  filter(company_location == "United States<br><span style='font-size:5pt;'>from 5354 salaries</span>")
+  filter(company_location == "United States<br><span style='font-size:5pt; font-style: italic;'>from 5354 salaries</span>")
 ```
 
 ```{r}
@@ -87,17 +87,16 @@ top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
        x="\nSalary Range",
        y=NULL,
        caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
-  theme(axis.text.x = element_text(size = 8), 
-        axis.text.y = element_markdown(margin = margin(r = -15)),
+  theme(axis.text.x = element_text(color = 'white', size = 8, face = "italic"), 
+        axis.text.y = element_markdown(margin = margin(r = -15), color = 'white',size=8),
         panel.grid.major.y = element_blank(),
         panel.grid.major.x = element_line(size=0.05),
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = 'gray15'),
-        axis.text = element_text(color = 'white'),
         plot.title = element_text(color = 'white', size = 14),
         plot.subtitle = element_text(color = 'white', size = 8, vjust = 2),
         axis.title = element_text(color = 'white', size = 10),
-        axis.title.x = element_text(vjust=1.5, color='turquoise4', size = 8),
+        axis.title.x = element_text(vjust=1.5, color='turquoise4', size = 8, face = "italic"),
         plot.caption = element_text(color='gray70', size=6))
 ```
 

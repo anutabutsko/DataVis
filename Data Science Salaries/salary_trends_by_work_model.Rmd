@@ -56,17 +56,17 @@ salary_trends_plot <- salary_trends_plot_data %>%
        y = "Mean Salary in USD\n",
        caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
   theme(axis.text.x = element_text(size = 8), 
-        axis.text.y = element_markdown(margin = margin(r = -15)),
+        axis.text.y = element_markdown(margin = margin(r = -15), face = "italic"),
         panel.grid.major = element_line(size=0.05),
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = 'gray15'),
         axis.text = element_text(color = 'white'),
         plot.title = element_text(color = 'white', size = 14),
-        plot.subtitle = element_text(color = 'white', size = 8, vjust = 2.5),
-        axis.title.y = element_text(vjust=-1.2, color='turquoise4', size = 8),
+        plot.subtitle = element_text(color = 'white', size = 8, vjust = 2.5, face = "italic"),
+        axis.title.y = element_text(vjust=-1.2, color='turquoise4', size = 8, face = "italic"),
         plot.caption = element_text(color='gray70', size=6),
         legend.position = "bottom",
-        legend.text = element_text(color = "white", size=8),
+        legend.text = element_text(color = "white", size=8, face = "italic"),
         legend.title = element_blank())
 ```
 
