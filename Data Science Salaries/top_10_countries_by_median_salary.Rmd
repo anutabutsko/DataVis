@@ -25,31 +25,31 @@ salary_label <- function(salary) {
 ```
 
 ```{r}
-# Preprocess data to focus on top 10 company locations based on mean salary
+# Preprocess data to focus on top 10 company locations based on median salary
 # Ensure there are at least 20 observations per group for reliability
-top_10_countries_by_mean_salary_data <- data %>%
+top_10_countries_by_median_salary_data <- data %>%
   group_by(company_location) %>%
   filter(n() >= 20) %>%
   summarise(
-    mean_salary = mean(salary_in_usd, na.rm = TRUE),
+    meadian_salary = median(salary_in_usd, na.rm = TRUE),
     lowest_salary = min(salary_in_usd, na.rm = TRUE),
     highest_salary = max(salary_in_usd, na.rm = TRUE),
     n = n()
   ) %>%
-  arrange(desc(mean_salary)) %>%
+  arrange(desc(meadian_salary)) %>%
   slice_head(n = 10) %>%
   mutate(company_location = paste0(company_location, "<br><span style='font-size:5pt; font-style: italic;'>from ", n, " salaries</span>")) %>%
   mutate(company_location = factor(company_location, levels = company_location[order(mean_salary)]))
-top_10_countries_by_mean_salary_data
+top_10_countries_by_median_salary_data
 
 # Create a separate data frame to highlight United States
-highlight_united_states <- top_10_countries_by_mean_salary_data %>%
+highlight_united_states <- top_10_countries_by_median_salary_data %>%
   filter(company_location == "United States<br><span style='font-size:5pt; font-style: italic;'>from 5354 salaries</span>")
 ```
 
 ```{r}
 # Create a plot to visualize salary data for top 10 locations
-top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
+top_10_countries_by_median_salary_plot <- top_10_countries_by_median_salary_data %>%
   arrange(highest_salary) %>%
   ggplot(aes(y=company_location)) +
   geom_point(aes(x=lowest_salary,), 
@@ -68,7 +68,7 @@ top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
                    yend=company_location), 
                color='gold3',
                size=0.2) +
-  geom_point(aes(x = mean_salary), 
+  geom_point(aes(x = median_salary), 
              shape = 23, 
              size = 3.5, 
              fill = "turquoise4", 
@@ -84,6 +84,7 @@ top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
                      limits=c(0, 800000)) +
   theme_minimal() +
   labs(title='Top 10 Countries in Data Science Salaries',
+       subtitle='Median Salaries Indicated by Diamonds, with Ranges Reflecting the Salary Spread per Country',
        x="\nSalary Range",
        y=NULL,
        caption = "Source of the data: KAGGLE Data Science Salaries 2024") +
@@ -93,8 +94,8 @@ top_10_countries_by_mean_salary_plot <- top_10_countries_by_mean_salary_data %>%
         panel.grid.major.x = element_line(size=0.05),
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = 'gray15'),
+        plot.subtitle = element_text(color='white', size=8, vjust=2, face = "italic"),
         plot.title = element_text(color = 'white', size = 14),
-        plot.subtitle = element_text(color = 'white', size = 8, vjust = 2),
         axis.title = element_text(color = 'white', size = 10),
         axis.title.x = element_text(vjust=1.5, color='turquoise4', size = 8, face = "italic"),
         plot.caption = element_text(color='gray70', size=6))
