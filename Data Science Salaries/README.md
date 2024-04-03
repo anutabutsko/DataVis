@@ -1,3 +1,3 @@
-![Mean Total Salary by Job Title in the USA](plots/mean_salary_by_job_title.png
+![Mean Total Salary by Job Title in the USA](plots/mean_salary_by_job_title.png)
 
 This bar chart illustrates the mean total salary, combining both full-time and part-time employment, for various data-related job titles in the USA. Each bar represents the average salary for a specific role, with 'Data Analyst' on the lower end at $113,342 and 'Director of Data Science' on the higher end at $238,402. Salaries generally increase with seniority, as seen with 'Data Scientist' earning an average of $162,673, and roles with leadership titles such as 'Managing Director of Data Science' and 'Head of Data Science' earning over $210,000. The chart emphasizes the salary progression associated with increased responsibility and specialized skills in the field of data science.
