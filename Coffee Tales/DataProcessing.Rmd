@@ -1,0 +1,270 @@
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(forcats)
+library(htmlwidgets)
+library(webshot)
+
+
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(readr)
+library(maps)
+library(plotly)
+library(dplyr)
+library(shinyWidgets)
+library(wordcloud2)
+library(tm)
+library(RColorBrewer)
+library(scales) 
+
+
+coffee <- read.csv("simplified_coffee.csv")
+
+
+coffee <- coffee %>%
+  mutate(origin = fct_recode(origin,
+                             "Hawaii" = "Hawai'I",
+                             "Republic of Congo" = "Democratic Republic Of The Congo")) %>%
+  mutate(loc_country = fct_recode(loc_country,
+                             "Taiwan" = "New Taiwan",
+  ))
+
+coffee$origin == "Hawaii"
+
+View(coffee)
+
+unique(coffee$name)
+
+
+
+
+
+
+text <- coffee %>%
+  filter(name == 'Ethiopia Shakiso Mormora') %>%
+  pull(review)
+
+# Create a text corpus
+corpus <- Corpus(VectorSource(text))
+
+# Clean up the text data
+corpus <- tm_map(corpus, content_transformer(tolower)) # Convert to lower case
+corpus <- tm_map(corpus, removePunctuation)            # Remove punctuation
+corpus <- tm_map(corpus, removeNumbers)                # Remove numbers
+corpus <- tm_map(corpus, removeWords, stopwords("en")) # Remove common stopwords
+
+dtm <- TermDocumentMatrix(corpus)
+
+# Convert matrix to a frequency table
+m <- as.matrix(dtm)
+word_freqs <- sort(rowSums(m), decreasing = TRUE)
+
+# Convert to dataframe
+df <- data.frame(word = names(word_freqs), frequency = word_freqs, stringsAsFactors = FALSE)
+
+# View the dataframe
+print(df)
+
+wordcloud2(df, size=0.5, color=my_colors)
+
+ 
+# Change the background color
+wordcloud2(df, size=0.5, color=rep_len(my_colors, nrow(df)), backgroundColor="black", shape = 'oval')
+
+saveWidget(wc, "wordcloud.html", selfcontained = TRUE)
+
+webshot("wordcloud.html", "wordcloud.png", delay = 3) 
+
+wordcloud(corpus
+        , scale=c(5,0.5)     # Set min and max scale
+        , max.words=100      # Set top n words
+        , random.order=FALSE # Words in decreasing freq
+        , rot.per=0.35       # % of vertical words
+        , use.r.layout=FALSE # Use C++ collision detection
+        , colors=my_colors)
+
+```
+
+```{r}
+coffee$X100g_USD
+```
+
+```{r}
+my_colors <- c("#402218","#865439", "#C68B59", "#62959C", "#FCDEC0", "#AC7D88")
+
+coffee_mutated <- coffee %>%
+  count(loc_country) %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(loc_country = reorder(loc_country, -n))
+
+coffee_mutated$ymax <- cumsum(coffee_mutated$prop)
+
+coffee_mutated$ymin <- c(0, head(coffee_mutated$ymax, n=-1))
+
+q <- coffee_mutated %>%
+  ggplot(aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=loc_country)) +
+  geom_rect() +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  scale_fill_manual(values = rep(my_colors, length.out = n_distinct(coffee$loc_country))) +
+  labs(title = "Roaster Location Countries", x = NULL, y = NULL, fill = NULL) +
+  theme_void() +
+  theme(legend.position = "right",
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10))
+
+ggplotly(q)
+```
+
+```{r}
+my_colors <- c("#402218","#865439", "#C68B59", "#62959C", "#FCDEC0", "#AC7D88")
+
+p <- coffee %>%
+  count(origin) %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(origin = factor(origin, levels = origin[order(-n)])) %>%
+  ggplot(aes(x = "", y = prop, fill = origin)) + 
+  geom_bar(stat = "identity", width = 0.2, color = "white", size = 0.01) +
+  coord_polar(theta = "y") + 
+  scale_fill_manual(values = rep(my_colors, length.out = n_distinct(coffee$origin))) +
+  labs(fill = '', title = "Bean Origin Countries") +
+  theme_void() +
+  theme(legend.position = "right", 
+        legend.text = element_text(size = 8),  # Smaller text size
+      legend.title = element_text(size = 10),  # Smaller title size
+      legend.key.size = unit(0.5, "lines"))
+ p
+```
+```{r}
+coffee %>%
+      count(loc_country) %>%
+      mutate(prop = n / sum(n)) %>%
+      mutate(ymax = cumsum(coffee$prop)) 
+```
+
+```{r}
+coffee %>%
+  count(origin) %>%
+  group_by(origin) %>%
+  summarise(n = sum(n), .groups = 'drop') %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(ymax = cumsum(prop), 
+         ymin = c(0, head(ymax, n = -1))) %>%
+  mutate(origin = factor(origin, levels = origin[order(-n)])) %>%
+  ggplot(aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origin)) +
+  geom_rect() +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  scale_fill_manual(values = my_colors) +
+  labs(title = "Top Coffee Origins", x = NULL, y = NULL, fill = NULL) +
+  theme_void() +
+  theme(legend.position = "right",
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10))
+```
+
+```{r}
+library(maps)
+
+worlddata <- map_data("world")
+
+worlddata <- worlddata %>%
+  mutate(region = fct_recode(region,
+                             "Republic of Congo" = "Democratic Republic of the Congo"))
+
+wbmap <- left_join(coffee, worlddata, by = c("origin" = "region"))
+
+
+
+coffee_agg <- coffee %>% 
+  group_by(origin) %>% 
+  summarise(mean_rating = mean(rating), .groups = 'drop')  # example aggregation
+
+# Join aggregated coffee data with world data
+wbmap <- left_join(coffee_agg, worlddata, by = c("origin" = "region"))
+
+wbmap
+q <- ggplot() +
+  geom_polygon(data = worlddata, aes(long, lat, group = group, text=paste(region)), size = 0.15, fill = "gray90", color = "white") +
+  coord_quickmap() +
+  theme_void() +
+  scale_fill_manual(values = rep(my_colors, length.out = n_distinct(wbmap$origin))) +
+  theme(legend.position = "bottom") +
+  guides(fill = 'none')
+
+
+p <- ggplotly(q, tooltip = c("fill", "text"))
+
+# Modify the data to include hover text
+p$data[[2]]$text <- wbmap$origin
+p$data[[1]]$hoverinfo <- 'skip'
+
+p
+```
+
+
+```{r}
+# Joining the data with all worlddata and marking those with coffee data
+wbmap <- right_join(worlddata, coffee, by = c("region" = "origin"), suffix = c("", "_coffee"))
+
+# Adjusting 'fill' to differentiate countries with coffee data
+wbmap <- mutate(wbmap, has_coffee = !is.na(wbmap$origin_coffee))
+
+# Plot
+ggplot(wbmap, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = has_coffee), color = "white", size = 0.15) +
+  scale_fill_manual(values = c("TRUE" = "blue", "FALSE" = "gray90")) +  # Customize colors as needed
+  coord_quickmap() +
+  theme_void() +
+  guides(fill = 'none')
+
+
+wbmap <- left_join(coffee, worlddata, by = c("origin" = "region"))
+wbmap
+```
+
+
+```{r}
+result <- coffee %>%
+  group_by(roast) %>%
+  summarize(average_price = mean(X100g_USD, na.rm = TRUE)) %>%
+  arrange(desc(average_price)) %>%
+  top_n(10, average_price) %>%
+  ggplot(aes(x = reorder(roast, -average_price), y = average_price, fill = roast)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Roaster", y = "Average Price per 100g (USD)", title = "Top 10 Most Expensive Coffees by Roaster") +
+  theme_minimal() +
+  scale_fill_manual(values = rep(my_colors, length.out = 10)) +
+  scale_y_continuous(labels = label_dollar()) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
+
+print(result)
+
+coffee[coffee$origin == 'Ecuador', ]
+
+```
+
+```{r}
+data <- coffee %>%
+  filter(rating >= 95) %>%
+  group_by(origin) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  mutate(ordering = factor(origin), levels = unique(origin))
+
+ggplot(data, aes(x = ordering, y = count, fill = ordering)) +
+  geom_col(show.legend = FALSE) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size = 20),
+        axis.text = element_text(size = 12))
+
+
+```
+
+
